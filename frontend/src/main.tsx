@@ -6,6 +6,7 @@ import { SWRConfig } from 'swr';
 import './app.css';
 import { store } from './store/store';
 import { router } from './app/router';
+import { SocketProvider } from './context/SocketProvider';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -17,7 +18,9 @@ createRoot(document.getElementById('root')!).render(
           dedupingInterval: 5_000,
         }}
       >
-        <RouterProvider router={router} />
+        <SocketProvider>
+          <RouterProvider router={router} />
+        </SocketProvider>
       </SWRConfig>
     </Provider>
   </StrictMode>,
