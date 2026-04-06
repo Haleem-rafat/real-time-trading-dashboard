@@ -9,6 +9,7 @@ import { RedisModule } from './redis/redis.module';
 import { JwtGuard } from './common/guards/jwt.guard';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
+import { TickerModule } from './ticker/ticker.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { AuthModule } from './auth/auth.module';
     RedisModule,
     UserModule,
     AuthModule,
+    TickerModule,
   ],
   controllers: [AppController],
   providers: [
