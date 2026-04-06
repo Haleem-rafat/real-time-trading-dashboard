@@ -1,0 +1,47 @@
+# fly.toml — backend deployment config for Fly.io
+#
+# This deploys the NestJS backend (REST + WebSocket gateway + price simulator).
+# The frontend lives on Vercel and points to this app's public URL.
+#
+# IMPORTANT: change `app` to a unique name on Fly before first deploy:
+#   fly apps create <your-app-name>
+# or let `fly launch` pick one for you.
+
+app = "trading-backend"        # ← change me to your unique app name
+primary_region = "ams"          # ← amsterdam; pick the region nearest your users
+
+[build]
+  # Default Dockerfile at the repo root (./Dockerfile).
+  # Build context is the repo root so the Dockerfile can `COPY backend/...`.
+
+[env]
+  NODE_ENV = "production"
+  PORT = "8080"
+  ALLOW_ANON_WS = "true"
+  TICK_INTERVAL_MS = "1000"
+  # Secrets set via `fly secrets set` (NOT in this file):
+  #   MONGODB_URL    — MongoDB Atlas SRV URI
+  #   REDIS_URL      — Upstash rediss:// URL
+  #   JWT_SECRET     — long random string
+  #   FRONTEND_URL   — comma-separated list of allowed origins (Vercel URLs)
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  # The price simulator is a long-running interval, and Socket.IO holds
+  # open connections — so we never want Fly to suspend the machine.
+  auto_stop_machines = "off"
+  auto_start_machines = false
+  min_machines_running = 1
+  processes = ["app"]
+
+  [[http_service.checks]]
+    interval = "15s"
+    timeout = "5s"
+    grace_period = "30s"
+    method = "get"
+    path = "/api/v1/health"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"

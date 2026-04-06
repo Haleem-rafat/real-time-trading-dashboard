@@ -1,0 +1,37 @@
+# Repo-root .dockerignore — keeps the Fly build context tiny.
+# We only need backend/{package*.json,tsconfig*.json,nest-cli.json,src} —
+# everything else is excluded so the build doesn't ship the frontend or
+# any node_modules to the Docker daemon.
+
+# Node + build artifacts
+**/node_modules
+**/dist
+**/coverage
+**/.cache
+
+# Frontend is deployed separately to Vercel — don't ship it to Fly
+frontend
+
+# Local + tooling
+.git
+.github
+.claude
+.vscode
+.idea
+.DS_Store
+
+# Env files (secrets are set via `fly secrets set`)
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+
+# Compose + project meta — not part of the runtime image
+docker-compose.yml
+README.md
+*.md
+!backend/README.md
+*.log
+npm-debug.log*

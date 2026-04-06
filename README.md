@@ -113,6 +113,102 @@ npm test              # unit tests
 npm run test:cov      # with coverage
 ```
 
+## Deployment — Fly.io (backend) + Vercel (frontend)
+
+The stack is split across two platforms because the backend has a long-lived
+WebSocket gateway + a perpetual price simulator (incompatible with serverless),
+while the frontend is a static SPA that fits Vercel perfectly.
+
+```
+Vercel (SPA)  ──HTTPS──▶  Fly.io (NestJS)  ──▶  MongoDB Atlas (M0)
+              ──WSS────▶                    ──▶  Upstash Redis
+```
+
+### One-time setup
+
+1. **MongoDB Atlas** — create a free M0 cluster, allow `0.0.0.0/0`, copy the SRV URI
+2. **Upstash Redis** — create a free database, copy the `rediss://...` URL
+3. **Fly.io** — `brew install flyctl && fly auth signup`
+4. **Vercel** — sign up + connect your GitHub account
+
+### Backend → Fly.io
+
+The repo root contains `fly.toml` and a Fly-specific `Dockerfile` that uses
+`backend/` paths (build context = repo root). The `.dockerignore` excludes
+`frontend/`, `node_modules`, and env files so the build context stays small.
+
+```bash
+# 1. Edit fly.toml — change `app = "trading-backend"` to a unique name
+#    and pick a region near your users (`primary_region`)
+
+# 2. Create the Fly app (or let `fly launch` do it)
+fly apps create <your-app-name>
+
+# 3. Set runtime secrets (NOT in fly.toml — these are encrypted by Fly)
+fly secrets set \
+  MONGODB_URL='mongodb+srv://user:pass@cluster.xxx.mongodb.net/trading?retryWrites=true&w=majority' \
+  REDIS_URL='rediss://default:xxx@xxx.upstash.io:6379' \
+  JWT_SECRET="$(openssl rand -base64 48)" \
+  FRONTEND_URL='http://localhost:5173'   # placeholder; update after Vercel deploy
+
+# 4. Deploy
+fly deploy
+
+# 5. Verify
+curl https://<your-app-name>.fly.dev/api/v1/health
+curl https://<your-app-name>.fly.dev/api/v1/tickers
+```
+
+> **Tip**: if you connected the Fly GitHub deployer instead of the CLI, just
+> push the repo — Fly will pick up `fly.toml` + `Dockerfile` automatically.
+> You still need to set the secrets via the CLI or the Fly dashboard.
+
+### Frontend → Vercel
+
+The `frontend/vercel.json` already wires Vite + SPA fallback + immutable asset
+caching, so all you need to do in the dashboard is point Vercel at the
+`frontend/` subdirectory and set 2 env vars.
+
+1. **New Project** → import the GitHub repo
+2. **Root Directory**: `frontend`
+3. **Framework Preset**: Vite (auto-detected)
+4. **Environment Variables** (Production scope):
+   - `VITE_API_URL` = `https://<your-app-name>.fly.dev/api/v1`
+   - `VITE_SOCKET_URL` = `https://<your-app-name>.fly.dev`
+5. **Deploy** → copy the `*.vercel.app` URL
+
+### Wire CORS back to Fly
+
+Update the `FRONTEND_URL` secret on Fly with the real Vercel URL so the
+backend's CORS middleware allows the browser. The backend's `main.ts` reads
+`process.env.FRONTEND_URL?.split(',')` so multiple origins are supported:
+
+```bash
+fly secrets set FRONTEND_URL='https://<your-project>.vercel.app,https://<your-project>-git-main.vercel.app'
+# This triggers an automatic redeploy on Fly
+```
+
+Include both the production URL and the `*-git-main` preview pattern so
+PR/branch previews also work.
+
+### End-to-end smoke test
+
+1. Open `https://<your-project>.vercel.app`
+2. Register a user → land on the dashboard
+3. See 6 tickers updating live every second
+4. Click any ticker → chart loads + appends live ticks
+5. `fly logs` should show `Client connected: ... (user=...)`
+
+### Costs
+
+Fly.io's hobby plan has a **$5/mo minimum** spend (as of late 2024). A single
+`shared-cpu-1x@512MB` machine running 24/7 stays comfortably within that.
+Atlas M0, Upstash free, and Vercel hobby are $0. Total: **~$5/mo**.
+
+If you want truly $0, swap Fly for Render (free tier; cold-starts after 15 min
+of inactivity) — see the deployment notes in the project history.
+
+
 ## Environment Variables
 
 ### Backend (`backend/.env`)
