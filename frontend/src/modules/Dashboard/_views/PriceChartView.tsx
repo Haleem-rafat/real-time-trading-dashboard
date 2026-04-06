@@ -20,7 +20,7 @@ function PriceChartView() {
 
   if (!symbol || !ticker) {
     return (
-      <div className="flex h-full min-h-[600px] items-center justify-center text-sm text-text-dim">
+      <div className="flex h-full min-h-[300px] items-center justify-center text-sm text-text-dim sm:min-h-[400px]">
         Select a ticker from the list
       </div>
     );
@@ -32,13 +32,13 @@ function PriceChartView() {
   const up = changePct >= 0;
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full min-h-0 flex-col">
       {/* Header above the chart */}
-      <div className="border-b border-border px-6 py-5">
-        <div className="flex flex-wrap items-end justify-between gap-4">
+      <div className="border-b border-border px-4 py-3 sm:px-6 sm:py-5">
+        <div className="flex flex-wrap items-end justify-between gap-3 sm:gap-4">
           <div>
-            <div className="flex items-center gap-3">
-              <span className="text-2xl font-semibold tracking-tight">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <span className="text-xl font-semibold tracking-tight sm:text-2xl">
                 {ticker.symbol}
               </span>
               {ticker.asset_type === 'crypto' && (
@@ -47,10 +47,12 @@ function PriceChartView() {
                 </span>
               )}
             </div>
-            <span className="text-sm text-text-dim">{ticker.name}</span>
+            <span className="text-xs text-text-dim sm:text-sm">
+              {ticker.name}
+            </span>
           </div>
 
-          <div className="flex items-baseline gap-4">
+          <div className="flex items-baseline gap-3 sm:gap-4">
             <PriceFlash
               value={price}
               format={(n) =>
@@ -59,22 +61,22 @@ function PriceChartView() {
                   maximumFractionDigits: 2,
                 })}`
               }
-              className="text-3xl font-semibold"
+              className="text-2xl font-semibold sm:text-3xl"
             />
             <div
               className={cn(
-                'num flex items-center gap-1 text-sm font-medium',
+                'num flex items-center gap-1 text-xs font-medium sm:text-sm',
                 up ? 'text-up' : 'text-down',
               )}
             >
               {up ? (
-                <TrendingUp className="h-4 w-4" />
+                <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               ) : (
-                <TrendingDown className="h-4 w-4" />
+                <TrendingDown className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               )}
               {up ? '+' : ''}
               {change.toFixed(2)}
-              <span className="ml-1 text-xs text-text-dim">
+              <span className="ml-1 text-[10px] text-text-dim sm:text-xs">
                 ({up ? '+' : ''}
                 {changePct.toFixed(3)}%)
               </span>
@@ -83,8 +85,10 @@ function PriceChartView() {
         </div>
       </div>
 
-      {/* Chart body */}
-      <div className="flex-1 p-4">
+      {/* Chart body — explicit viewport-relative height on mobile so the
+          chart is always visible regardless of how flex-1 resolves; on lg+
+          it fills the remaining main area. */}
+      <div className="h-[55vh] min-h-[300px] w-full p-3 sm:p-4 lg:h-auto lg:min-h-0 lg:flex-1">
         <LiveChart symbol={symbol} />
       </div>
     </div>

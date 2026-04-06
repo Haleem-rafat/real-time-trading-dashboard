@@ -38,32 +38,37 @@ real-time-trading-dashboard/
 
 ### Prerequisites
 - Docker + Docker Compose
-- (Optional for local dev) Node.js 20+
+- (Optional for local dev) Node.js 22+
 
 ### Run with Docker (one command)
 
 ```bash
-cp .env.example .env
 docker compose up --build
 ```
+
+That brings up **all four services** (mongo + redis + backend + frontend) on a single bridge network. The frontend container is an nginx image that serves the built SPA and proxies `/api/` and `/socket.io/` to the backend service — so the browser only ever talks to one origin (no CORS gymnastics).
 
 Then open:
 - **Frontend**: http://localhost:5173
 - **Backend API**: http://localhost:8080/api/v1
 - **API docs (Swagger)**: http://localhost:8080/docs
 
-### Local development
+First boot takes ~30s while Mongo/Redis become healthy and the ticker seeder backfills 24h of historical price points.
+
+### Local development (no Docker)
 
 ```bash
-# Start MongoDB + Redis
+# Start MongoDB + Redis only
 docker compose up mongo redis -d
 
-# Backend
+# Backend (terminal 1)
 cd backend && npm install && npm run start:dev
 
-# Frontend (in another terminal)
+# Frontend (terminal 2)
 cd frontend && npm install && npm run dev
 ```
+
+Frontend will be at http://localhost:5173 (or 5174 if 5173 is busy).
 
 ## Features
 
@@ -108,6 +113,30 @@ npm test              # unit tests
 npm run test:cov      # with coverage
 ```
 
+## Environment Variables
+
+### Backend (`backend/.env`)
+
+| Var | Default | Description |
+|---|---|---|
+| `NODE_ENV` | `development` | Node environment |
+| `PORT` | `8080` | HTTP port |
+| `MONGODB_URL` | `mongodb://localhost:27017/trading` | Mongo connection string |
+| `MONGODB_DB_NAME` | `trading` | Database name |
+| `REDIS_URL` | `redis://localhost:6379` | Redis connection string |
+| `JWT_SECRET` | `change-me-…` | JWT signing secret |
+| `JWT_EXPIRES` | `24h` | Access token TTL |
+| `FRONTEND_URL` | `http://localhost:5173` | Comma-separated allowed CORS origins |
+| `ALLOW_ANON_WS` | `true` | Permit anonymous WebSocket connections |
+| `TICK_INTERVAL_MS` | `1000` | Simulator tick interval |
+
+### Frontend (`frontend/.env`)
+
+| Var | Local default | Docker build arg |
+|---|---|---|
+| `VITE_API_URL` | `http://localhost:8080/api/v1` | `/api/v1` (proxied by nginx) |
+| `VITE_SOCKET_URL` | `http://localhost:8080` | `/` (proxied by nginx) |
+
 ## Trade-offs & Notes
 
 - **Single-process simulator** instead of Redis pub/sub — simpler for the demo. Horizontal scaling would use `@socket.io/redis-adapter` + Redis pub/sub for multi-replica fan-out.
@@ -117,3 +146,5 @@ npm run test:cov      # with coverage
 - **Recharts `isAnimationActive={false}`** is critical for smooth real-time updates.
 - **Chart capped at 300 points** to keep Recharts performant on long sessions.
 - **JWT-only auth (no refresh tokens)** — meets the "mock auth" requirement.
+- **Frontend served by nginx** with `/api/` and `/socket.io/` reverse-proxied to the backend service. The browser sees a single origin, so there is **no CORS preflight in the dockerised setup**.
+- **Mean reversion** in the price simulator (`MEAN_REVERSION_STRENGTH = 0.005`) keeps prices loosely anchored to each ticker's `base_price` so the random walk doesn't drift to zero or infinity over long sessions.

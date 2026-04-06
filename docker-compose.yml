@@ -15,6 +15,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - trading
 
   redis:
     image: redis:7-alpine
@@ -29,6 +31,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - trading
 
   backend:
     build:
@@ -49,7 +53,8 @@ services:
       REDIS_URL: redis://redis:6379
       JWT_SECRET: change-me-in-prod-please-use-a-long-random-string
       JWT_EXPIRES: 24h
-      FRONTEND_URL: http://localhost:5173
+      # Allow both the dockerised frontend (port 5173) and local Vite dev (5173/5174)
+      FRONTEND_URL: http://localhost:5173,http://localhost:5174
       ALLOW_ANON_WS: "true"
       TICK_INTERVAL_MS: "1000"
     ports:
@@ -60,9 +65,38 @@ services:
       timeout: 5s
       retries: 5
       start_period: 20s
+    networks:
+      - trading
 
-  # frontend service will be added in Step 14
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # Relative paths → nginx (in this same container) proxies them
+        # to the backend service. No CORS, no host hard-coding.
+        VITE_API_URL: /api/v1
+        VITE_SOCKET_URL: /
+    container_name: trading-frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "5173:80"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - trading
 
 volumes:
   mongo_data:
   redis_data:
+
+networks:
+  trading:
+    driver: bridge

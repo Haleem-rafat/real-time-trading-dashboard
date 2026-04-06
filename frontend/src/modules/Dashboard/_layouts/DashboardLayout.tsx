@@ -23,7 +23,7 @@ function DashboardLayout({ sidebar, children }: Props) {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-bg text-text">
+    <div className="flex min-h-screen flex-col bg-bg text-text lg:h-screen lg:min-h-0">
       {/* Header */}
       <header className="sticky top-0 z-20 border-b border-border bg-bg/80 backdrop-blur">
         <div className="flex h-14 items-center justify-between px-4 lg:px-6">
@@ -58,12 +58,17 @@ function DashboardLayout({ sidebar, children }: Props) {
         </div>
       </header>
 
-      {/* Body — sidebar + main */}
-      <div className="flex flex-1 flex-col lg:flex-row">
-        <aside className="w-full shrink-0 border-r border-border bg-surface lg:w-80 lg:max-w-80">
+      {/* Body — sidebar + main
+          Below lg the vertical sidebar is hidden and the MobileTickerStrip
+          (rendered as part of children) takes over for navigation. On lg+
+          the sidebar shows alongside the chart in the classic dashboard layout. */}
+      <div className="flex flex-1 flex-col lg:flex-row lg:overflow-hidden">
+        <aside className="hidden w-80 max-w-80 shrink-0 overflow-y-auto border-r border-border bg-surface lg:block">
           {sidebar}
         </aside>
-        <main className="flex-1 overflow-hidden">{children}</main>
+        <main className="flex min-h-0 flex-1 flex-col lg:overflow-hidden">
+          {children}
+        </main>
       </div>
     </div>
   );

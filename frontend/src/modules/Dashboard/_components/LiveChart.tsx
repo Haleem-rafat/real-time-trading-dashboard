@@ -86,7 +86,7 @@ function LiveChart({ symbol }: Props) {
 
   if (isLoading && chartData.length === 0) {
     return (
-      <div className="flex h-full min-h-[400px] items-center justify-center text-sm text-text-dim">
+      <div className="flex h-full min-h-[260px] sm:min-h-[360px] items-center justify-center text-sm text-text-dim">
         Loading chart…
       </div>
     );
@@ -94,14 +94,14 @@ function LiveChart({ symbol }: Props) {
 
   if (error) {
     return (
-      <div className="flex h-full min-h-[400px] items-center justify-center text-sm text-down">
+      <div className="flex h-full min-h-[260px] sm:min-h-[360px] items-center justify-center text-sm text-down">
         Failed to load history
       </div>
     );
   }
 
   return (
-    <div className="h-full min-h-[400px] w-full">
+    <div className="h-full min-h-[260px] sm:min-h-[360px] w-full">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart
           data={chartData}

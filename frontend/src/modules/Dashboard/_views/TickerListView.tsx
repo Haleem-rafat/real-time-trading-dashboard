@@ -1,26 +1,12 @@
-import { useMemo, useEffect } from 'react';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { useTickers } from '@hooks/useTickers';
-import { useLivePrices } from '@hooks/useLivePrices';
-import { useAppDispatch, useAppSelector } from '@store/hooks';
-import { setSelectedTicker } from '@store/slices/selectedTickerSlice';
 import TickerRow from '../_components/TickerRow';
 
+// Note: the live-price subscription and auto-select-first-ticker effect
+// live in DashboardPage so they stay mounted regardless of which navigator
+// (this sidebar on lg+, MobileTickerStrip below lg) is visible.
 function TickerListView() {
   const { tickers, isLoading, error } = useTickers();
-  const dispatch = useAppDispatch();
-  const selected = useAppSelector((s) => s.selectedTicker.symbol);
-
-  // Stable list of symbols for the live-price subscription
-  const symbols = useMemo(() => tickers.map((t) => t.symbol), [tickers]);
-  useLivePrices(symbols);
-
-  // Auto-select the first ticker once the list loads (so the chart has something to show)
-  useEffect(() => {
-    if (!selected && tickers.length > 0) {
-      dispatch(setSelectedTicker(tickers[0].symbol));
-    }
-  }, [selected, tickers, dispatch]);
 
   if (isLoading) {
     return (
