@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <!-- Dark gradient background -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0a0a0f"/>
+      <stop offset="100%" stop-color="#12121a"/>
+    </linearGradient>
+    <linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#00ff88" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#00ff88" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- Grid lines (subtle) -->
+  <g stroke="#1f1f2e" stroke-width="1">
+    <line x1="0" y1="180" x2="1200" y2="180"/>
+    <line x1="0" y1="290" x2="1200" y2="290"/>
+    <line x1="0" y1="400" x2="1200" y2="400"/>
+    <line x1="0" y1="510" x2="1200" y2="510"/>
+  </g>
+
+  <!-- Filled chart area -->
+  <path
+    d="M 60 480 L 160 440 L 260 470 L 360 410 L 460 430 L 560 360 L 660 380 L 760 290 L 860 320 L 960 240 L 1060 270 L 1140 200 L 1140 580 L 60 580 Z"
+    fill="url(#chartFill)"
+  />
+
+  <!-- Chart line -->
+  <polyline
+    points="60,480 160,440 260,470 360,410 460,430 560,360 660,380 760,290 860,320 960,240 1060,270 1140,200"
+    fill="none"
+    stroke="#00ff88"
+    stroke-width="5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+
+  <!-- Logo block (top-left) -->
+  <g transform="translate(60, 60)">
+    <rect width="64" height="64" rx="14" fill="#00d4ff22"/>
+    <polyline
+      points="14,40 22,40 27,50 36,16 41,40 50,40"
+      fill="none"
+      stroke="#00d4ff"
+      stroke-width="4"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </g>
+
+  <!-- Brand wordmark -->
+  <text x="140" y="105" font-family="Inter, system-ui, -apple-system, Segoe UI, sans-serif" font-size="42" font-weight="700" fill="#e5e5e5" letter-spacing="-1">
+    Trading<tspan fill="#00d4ff">Term</tspan>
+  </text>
+
+  <!-- Headline -->
+  <text x="60" y="220" font-family="Inter, system-ui, -apple-system, sans-serif" font-size="76" font-weight="800" fill="#e5e5e5" letter-spacing="-2">
+    Real-Time Trading
+  </text>
+  <text x="60" y="300" font-family="Inter, system-ui, -apple-system, sans-serif" font-size="76" font-weight="800" fill="#00d4ff" letter-spacing="-2">
+    Dashboard
+  </text>
+
+  <!-- Subline -->
+  <text x="60" y="360" font-family="Inter, system-ui, -apple-system, sans-serif" font-size="26" font-weight="400" fill="#9ca3af">
+    Live ticks · WebSocket streaming · Price alerts · Dark + light terminal UI
+  </text>
+
+  <!-- Stat pills (bottom row) -->
+  <g font-family="JetBrains Mono, Fira Code, monospace" font-size="22">
+    <!-- AAPL up -->
+    <g transform="translate(60, 510)">
+      <rect width="220" height="56" rx="10" fill="#0a0a0f" stroke="#1f1f2e" stroke-width="1"/>
+      <text x="20" y="35" fill="#9ca3af" font-weight="600">AAPL</text>
+      <text x="100" y="35" fill="#e5e5e5">$182.54</text>
+      <text x="195" y="35" fill="#00ff88" text-anchor="end">+1.84%</text>
+    </g>
+    <!-- BTC up -->
+    <g transform="translate(300, 510)">
+      <rect width="240" height="56" rx="10" fill="#0a0a0f" stroke="#1f1f2e" stroke-width="1"/>
+      <text x="20" y="35" fill="#9ca3af" font-weight="600">BTC</text>
+      <text x="80" y="35" fill="#e5e5e5">$67,420</text>
+      <text x="215" y="35" fill="#00ff88" text-anchor="end">+2.31%</text>
+    </g>
+    <!-- TSLA down -->
+    <g transform="translate(560, 510)">
+      <rect width="220" height="56" rx="10" fill="#0a0a0f" stroke="#1f1f2e" stroke-width="1"/>
+      <text x="20" y="35" fill="#9ca3af" font-weight="600">TSLA</text>
+      <text x="100" y="35" fill="#e5e5e5">$248.10</text>
+      <text x="195" y="35" fill="#ff3366" text-anchor="end">−0.62%</text>
+    </g>
+  </g>
+
+  <!-- Live indicator (top-right) -->
+  <g transform="translate(1020, 80)">
+    <circle cx="0" cy="0" r="6" fill="#00ff88"/>
+    <text x="14" y="6" font-family="Inter, sans-serif" font-size="20" font-weight="600" fill="#00ff88">LIVE</text>
+  </g>
+</svg>

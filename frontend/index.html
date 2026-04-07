@@ -2,10 +2,88 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <!-- Primary SEO -->
+    <title>TradingTerm — Real-Time Trading Dashboard</title>
+    <meta
+      name="description"
+      content="A live market dashboard with real-time price ticks over WebSocket, customisable price alerts, interactive charts, and a dark/light terminal UI."
+    />
+    <meta
+      name="keywords"
+      content="trading dashboard, real-time market data, price alerts, websocket trading, live charts, stock dashboard, crypto dashboard, AAPL, BTC, terminal UI"
+    />
+    <meta name="author" content="TradingTerm" />
+    <meta name="robots" content="index, follow" />
+    <meta name="googlebot" content="index, follow" />
+    <link rel="canonical" href="https://real-time-trading-dashboard-five.vercel.app/" />
+
+    <!-- Theme color (matches the dark terminal palette; light value below
+         is picked up by browsers when the user's OS is in light mode) -->
+    <meta name="theme-color" content="#0a0a0f" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f8fafc" media="(prefers-color-scheme: light)" />
+    <meta name="color-scheme" content="dark light" />
+
+    <!-- Icons -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TradingTerm — Real-Time Dashboard</title>
-    <meta name="theme-color" content="#0a0a0f" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <!-- Open Graph (Facebook, LinkedIn, Slack, Discord, iMessage…) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="TradingTerm" />
+    <meta property="og:title" content="TradingTerm — Real-Time Trading Dashboard" />
+    <meta
+      property="og:description"
+      content="Live market dashboard with real-time price ticks over WebSocket, price alerts, interactive charts, and a dark/light terminal UI."
+    />
+    <meta property="og:url" content="https://real-time-trading-dashboard-five.vercel.app/" />
+    <meta property="og:image" content="https://real-time-trading-dashboard-five.vercel.app/og-image.svg" />
+    <meta property="og:image:type" content="image/svg+xml" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="TradingTerm — Real-Time Trading Dashboard preview" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter / X Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="TradingTerm — Real-Time Trading Dashboard" />
+    <meta
+      name="twitter:description"
+      content="Live market dashboard with real-time price ticks over WebSocket, price alerts, interactive charts, and a dark/light terminal UI."
+    />
+    <meta name="twitter:image" content="https://real-time-trading-dashboard-five.vercel.app/og-image.svg" />
+    <meta name="twitter:image:alt" content="TradingTerm — Real-Time Trading Dashboard preview" />
+
+    <!-- Apple PWA hints -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="TradingTerm" />
+    <meta name="format-detection" content="telephone=no" />
+
+    <!-- Preconnect to the API + WebSocket origin so the first request
+         doesn't pay the DNS + TLS handshake cost -->
+    <link rel="preconnect" href="https://real-time-trading-dashboard.fly.dev" crossorigin />
+
+    <!-- Structured data — helps Google render a richer SERP card -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "TradingTerm",
+        "description": "A live market dashboard with real-time price ticks over WebSocket, customisable price alerts, interactive charts, and a dark/light terminal UI.",
+        "url": "https://real-time-trading-dashboard-five.vercel.app/",
+        "applicationCategory": "FinanceApplication",
+        "operatingSystem": "Any",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        }
+      }
+    </script>
+
     <!--
       Apply the saved theme (or fall back to the OS preference) BEFORE
       the first paint, otherwise we get a flash of the wrong theme while
@@ -34,6 +112,11 @@
   </head>
   <body>
     <div id="root"></div>
+    <noscript>
+      <div style="padding:24px;font-family:system-ui,sans-serif;color:#e5e5e5;background:#0a0a0f;">
+        TradingTerm requires JavaScript to stream live market data. Please enable JavaScript to continue.
+      </div>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
