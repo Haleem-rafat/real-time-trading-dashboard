@@ -1,12 +1,14 @@
 import { useEffect, useMemo } from 'react';
 import { useTickers } from '@hooks/useTickers';
 import { useLivePrices } from '@hooks/useLivePrices';
+import { useAlertNotifications } from '@hooks/useAlertNotifications';
 import { useAppDispatch, useAppSelector } from '@store/hooks';
 import { setSelectedTicker } from '@store/slices/selectedTickerSlice';
 import DashboardLayout from '../_layouts/DashboardLayout';
 import TickerListView from '../_views/TickerListView';
 import PriceChartView from '../_views/PriceChartView';
 import MobileTickerStrip from '../_components/MobileTickerStrip';
+import AlertToastListener from '../_components/AlertToastListener';
 
 function DashboardPage() {
   const { tickers } = useTickers();
@@ -19,6 +21,9 @@ function DashboardPage() {
   const symbols = useMemo(() => tickers.map((t) => t.symbol), [tickers]);
   useLivePrices(symbols);
 
+  // Subscribe to `alert:triggered` events for the lifetime of the dashboard.
+  useAlertNotifications();
+
   // Auto-select the first ticker once the list loads.
   useEffect(() => {
     if (!selected && tickers.length > 0) {
@@ -30,6 +35,7 @@ function DashboardPage() {
     <DashboardLayout sidebar={<TickerListView />}>
       <MobileTickerStrip />
       <PriceChartView />
+      <AlertToastListener />
     </DashboardLayout>
   );
 }

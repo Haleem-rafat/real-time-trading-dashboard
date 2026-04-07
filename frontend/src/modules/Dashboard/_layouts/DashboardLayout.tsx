@@ -6,6 +6,7 @@ import { Button } from '@UI/index';
 import { useAuth } from '@hooks/useAuth';
 import { useSocket } from '@hooks/useSocket';
 import { ERoutes } from '@constants/routes';
+import AlertBell from '../_components/AlertBell';
 
 interface Props {
   sidebar: ReactNode;
@@ -46,7 +47,8 @@ function DashboardLayout({ sidebar, children }: Props) {
               {isConnected ? 'Live' : 'Disconnected'}
             </span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <AlertBell />
             <span className="num hidden text-xs text-text-dim md:inline">
               {user?.email}
             </span>

@@ -17,6 +17,7 @@ import { MarketDataService } from '../market-data/market-data.service';
 import { AppEvents, SocketEvents } from '../common/enums/socket-events.enum';
 import type { PriceTick } from '../market-data/price-generator';
 import type { AuthSocket } from './interfaces/auth-socket.interface';
+import type { AlertTriggeredEvent } from '../alert/alert.service';
 import { createWSAuthMiddleware } from './ws-auth.middleware';
 
 @WebSocketGateway({
@@ -115,5 +116,14 @@ export class MarketGateway
     this.server
       .to(`ticker:${tick.symbol}`)
       .emit(SocketEvents.PRICE_UPDATE, tick);
+  }
+
+  @OnEvent(AppEvents.ALERT_TRIGGERED)
+  handleAlertTriggered(evt: AlertTriggeredEvent) {
+    // Each authenticated client joins `user:<sub>` on connect, so this
+    // delivers the alert to every device the user has open.
+    this.server
+      .to(`user:${evt.userId}`)
+      .emit(SocketEvents.ALERT_TRIGGERED, evt);
   }
 }

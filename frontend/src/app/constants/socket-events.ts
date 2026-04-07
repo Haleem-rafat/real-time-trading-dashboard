@@ -3,6 +3,7 @@ export const ESocketEvents = {
   // Server → Client
   CONNECTION_READY: 'connection:ready',
   PRICE_UPDATE: 'price:update',
+  ALERT_TRIGGERED: 'alert:triggered',
   ERROR: 'error',
 
   // Client → Server

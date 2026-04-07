@@ -217,6 +217,13 @@ export class TickerService implements OnModuleInit {
     return this.tickerModel.find({ is_active: true }).lean();
   }
 
+  /** Cheap existence check used by AlertService when validating user input */
+  async tickerExists(symbol: string): Promise<boolean> {
+    const upper = symbol.toUpperCase();
+    const found = await this.tickerModel.exists({ symbol: upper });
+    return Boolean(found);
+  }
+
   /** Used by Step 6 simulator to persist live ticks in batches */
   async appendHistory(
     docs: { symbol: string; price: number; timestamp: Date }[],

@@ -2,6 +2,7 @@ export enum SocketEvents {
   // Server → Client
   CONNECTION_READY = 'connection:ready',
   PRICE_UPDATE = 'price:update',
+  ALERT_TRIGGERED = 'alert:triggered',
   ERROR = 'error',
 
   // Client → Server
@@ -12,4 +13,5 @@ export enum SocketEvents {
 
 export enum AppEvents {
   PRICE_TICK = 'price.tick',
+  ALERT_TRIGGERED = 'alert.triggered',
 }
