@@ -15,6 +15,14 @@ interface TickerState {
   basePrice: number;
   volatility: number;
   price: number;
+  /**
+   * The price the simulator first observed for this symbol when it
+   * booted. Used as the reference for the session-relative `change` and
+   * `changePct` carried in every tick payload — so the dashboard's
+   * "+2.34%" badge stays meaningful instead of flipping sign every
+   * second from the per-tick noise.
+   */
+  sessionOpen: number;
 }
 
 const FLUSH_EVERY_N_TICKS = 10;
@@ -68,6 +76,7 @@ export class MarketDataService implements OnModuleInit, OnModuleDestroy {
         basePrice: t.base_price,
         volatility: t.volatility,
         price: snapshot.lastPrice,
+        sessionOpen: snapshot.lastPrice,
       });
     }
   }
@@ -80,8 +89,11 @@ export class MarketDataService implements OnModuleInit, OnModuleDestroy {
       const prev = s.price;
       const drift = ((s.basePrice - prev) / prev) * MEAN_REVERSION_STRENGTH;
       const next = Number(nextPrice(prev, s.volatility, drift).toFixed(2));
-      const change = Number((next - prev).toFixed(2));
-      const changePct = Number(((change / prev) * 100).toFixed(4));
+      // Session-relative — vs the price the simulator first saw for this
+      // symbol. This makes the percent stable enough to display in a
+      // ticker row without flipping sign on every tick from per-tick noise.
+      const change = Number((next - s.sessionOpen).toFixed(2));
+      const changePct = Number(((change / s.sessionOpen) * 100).toFixed(4));
 
       s.price = next;
 
