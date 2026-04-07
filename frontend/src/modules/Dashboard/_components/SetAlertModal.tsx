@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { X, TrendingUp, TrendingDown, Bell } from 'lucide-react';
@@ -28,21 +28,50 @@ interface Props {
  * is a fresh mount with fresh defaults, no reset effect needed.
  */
 function SetAlertModal({ symbol, onClose }: Props) {
-  const [direction, setDirection] = useState<TAlertDirection>('above');
-  const [submitError, setSubmitError] = useState<string | null>(null);
   const { create } = useAlerts();
   const livePrice = useAppSelector(
     (s) => s.livePrices.bySymbol[symbol]?.price ?? null,
   );
 
+  // Default the threshold to the current price + 1% so the user starts
+  // with a sensible "above" alert that will actually fire after a real
+  // move, instead of one that's already past on creation.
+  const defaultPrice = Number(((livePrice ?? 0) * 1.01).toFixed(2));
+
+  const [direction, setDirection] = useState<TAlertDirection>('above');
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { price: Number((livePrice ?? 0).toFixed(2)) },
+    defaultValues: { price: defaultPrice },
   });
+
+  // Live-watch the input so the direction badge / hint reacts as the
+  // user types. This is what gives the modal "smart" feedback: pick a
+  // price below current → suggest 'below' (red); above current →
+  // suggest 'above' (green).
+  const watchedPrice = useWatch({ control, name: 'price' });
+  const priceVsCurrent =
+    livePrice !== null && Number.isFinite(watchedPrice)
+      ? watchedPrice > livePrice
+        ? 'above'
+        : watchedPrice < livePrice
+          ? 'below'
+          : 'equal'
+      : null;
+
+  // If the chosen direction contradicts the threshold (e.g. picked
+  // 'above' but the price is below current → already past), warn the
+  // user inline. Backend will accept it but it'll never fire.
+  const directionMismatch =
+    priceVsCurrent !== null &&
+    priceVsCurrent !== 'equal' &&
+    priceVsCurrent !== direction;
 
   const onSubmit = handleSubmit(async (values) => {
     setSubmitError(null);
@@ -134,6 +163,20 @@ function SetAlertModal({ symbol, onClose }: Props) {
             error={errors.price?.message}
             {...register('price', { valueAsNumber: true })}
           />
+
+          {/* Inline direction-vs-threshold hint. Helps the user spot
+              "above $X" with X already below current — which is a
+              valid form input but the alert would never fire. */}
+          {directionMismatch && (
+            <div className="flex items-start gap-2 rounded border border-down/40 bg-down/10 px-3 py-2 text-[11px] text-down">
+              <span className="mt-0.5">⚠</span>
+              <span>
+                {direction === 'above'
+                  ? `Price is already above $${watchedPrice.toFixed(2)} — this alert would never fire. Switch to "Below" or pick a higher threshold.`
+                  : `Price is already below $${watchedPrice.toFixed(2)} — this alert would never fire. Switch to "Above" or pick a lower threshold.`}
+              </span>
+            </div>
+          )}
 
           {submitError && (
             <div className="rounded border border-down/40 bg-down/10 px-3 py-2 text-xs text-down">

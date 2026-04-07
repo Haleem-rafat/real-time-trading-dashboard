@@ -53,7 +53,13 @@ interface Props {
   symbol: string;
 }
 
+// Internal buffer cap — we keep up to MAX_POINTS in state for safety,
+// but the chart only *displays* the most recent VISIBLE_POINTS so each
+// new tick takes a meaningful fraction of the chart width. Without this
+// the 1-hour seed data dwarfs every live tick and the chart looks
+// frozen even though state is updating.
 const MAX_POINTS = 300;
+const VISIBLE_POINTS = 60;
 
 interface ChartPoint {
   ts: number; // millis (used as XAxis dataKey)
@@ -86,19 +92,27 @@ function formatTimeLong(ts: number): string {
 function LiveChart({ symbol }: Props) {
   const { history, isLoading, error } = useTickerHistory(symbol, '1h', '1m');
   const tick = useAppSelector((s) => s.livePrices.bySymbol[symbol]);
-  const [chartData, setChartData] = useState<ChartPoint[]>([]);
+  // Lazy-initialize from whatever SWR returned synchronously so a cache
+  // hit renders the chart immediately instead of flashing the skeleton
+  // for one frame. Cache miss → starts empty, the seed effect below
+  // fills it once history arrives.
+  const [chartData, setChartData] = useState<ChartPoint[]>(() =>
+    history.length > 0 ? history.map(toChartPoint) : [],
+  );
   const { theme } = useTheme();
   const palette = CHART_PALETTE[theme];
 
-  // Seed local chart series whenever the historical fetch resolves (or
-  // symbol changes). The chart maintains a sliding 300-point window of
-  // local state — this is a legitimate "external store → local state"
-  // bridge that the React 19 lint flags but cannot be replaced cleanly
-  // by useMemo (a memo can't accumulate over time).
+  // Seed once when history first arrives (cache-miss path). After the
+  // initial seed we leave chartData alone so that SWR revalidations
+  // never wipe accumulated live ticks. Symbol changes are handled by
+  // `key={symbol}` on the parent — that fully remounts this component
+  // with fresh state, so we don't need symbol in the deps array.
   useEffect(() => {
+    if (history.length === 0) return;
+    if (chartData.length > 0) return;
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setChartData(history.length > 0 ? history.map(toChartPoint) : []);
-  }, [history, symbol]);
+    setChartData(history.map(toChartPoint));
+  }, [history, chartData.length]);
 
   // Append every new live tick for this symbol; cap at MAX_POINTS.
   // Same external-store → local-state bridge pattern as above.
@@ -145,26 +159,50 @@ function LiveChart({ symbol }: Props) {
     return last >= first ? palette.up : palette.down;
   }, [tick, chartData, palette]);
 
+  // Sliding visible window. The full buffer keeps 1h of context (so the
+  // baseline / scroll-back stays meaningful) but the chart only renders
+  // the last N points so live ticks are clearly visible instead of
+  // being lost in 60 minutes of historical width.
+  const visibleData = useMemo(
+    () =>
+      chartData.length > VISIBLE_POINTS
+        ? chartData.slice(-VISIBLE_POINTS)
+        : chartData,
+    [chartData],
+  );
+
   const gradientId = `grad-${symbol}`;
 
-  if (isLoading && chartData.length === 0) {
+  // Show the skeleton whenever we have no points to draw, regardless of
+  // isLoading. This prevents the empty-axis flicker that happens when
+  // SWR has already resolved (isLoading=false) but the seed effect for
+  // the new symbol hasn't run yet.
+  if (chartData.length === 0) {
+    if (error) {
+      return (
+        <div className="flex h-full min-h-[260px] sm:min-h-[360px] flex-col items-center justify-center gap-2 text-sm text-down">
+          <span className="text-2xl">⚠</span>
+          <span>Failed to load history</span>
+        </div>
+      );
+    }
     return <ChartSkeleton palette={palette} />;
   }
 
-  if (error) {
-    return (
-      <div className="flex h-full min-h-[260px] sm:min-h-[360px] flex-col items-center justify-center gap-2 text-sm text-down">
-        <span className="text-2xl">⚠</span>
-        <span>Failed to load history</span>
-      </div>
-    );
-  }
-
   return (
-    <div className="h-full min-h-[260px] sm:min-h-[360px] w-full">
+    <div className="relative h-full min-h-[260px] sm:min-h-[360px] w-full">
+      {baseline !== null && (
+        <div className="pointer-events-none absolute right-4 top-3 z-10 flex items-center gap-1.5 rounded border border-border/70 bg-surface/80 px-2 py-1 text-[10px] uppercase tracking-wider text-text-dim backdrop-blur-sm">
+          <span className="h-px w-3 border-t border-dashed border-text-dim" />
+          <span>Open</span>
+          <span className="num font-medium text-text">
+            ${baseline.toFixed(2)}
+          </span>
+        </div>
+      )}
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart
-          data={chartData}
+          data={visibleData}
           margin={{ top: 16, right: 16, left: 0, bottom: 8 }}
         >
           <defs>
@@ -239,13 +277,6 @@ function LiveChart({ symbol }: Props) {
               strokeDasharray="4 4"
               strokeWidth={1}
               ifOverflow="extendDomain"
-              label={{
-                value: `$${baseline.toFixed(2)}`,
-                position: 'right',
-                fill: palette.tooltipLabel,
-                fontSize: 10,
-                offset: 6,
-              }}
             />
           )}
           <Area

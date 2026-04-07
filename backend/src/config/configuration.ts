@@ -33,5 +33,5 @@ export default (): AppConfig => ({
   },
   frontendUrl: process.env.FRONTEND_URL ?? 'http://localhost:5173',
   allowAnonWs: process.env.ALLOW_ANON_WS !== 'false',
-  tickIntervalMs: Number(process.env.TICK_INTERVAL_MS ?? 1000),
+  tickIntervalMs: Number(process.env.TICK_INTERVAL_MS ?? 500),
 });

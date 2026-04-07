@@ -19,10 +19,11 @@
           if (pref === 'light' || pref === 'dark') {
             theme = pref;
           } else {
-            theme = window.matchMedia &&
-              window.matchMedia('(prefers-color-scheme: light)').matches
-              ? 'light'
-              : 'dark';
+            // Same query the ThemeProvider uses — keep these in sync.
+            var prefersDark =
+              window.matchMedia &&
+              window.matchMedia('(prefers-color-scheme: dark)').matches;
+            theme = prefersDark ? 'dark' : 'light';
           }
           document.documentElement.setAttribute('data-theme', theme);
         } catch (e) {

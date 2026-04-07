@@ -56,14 +56,26 @@ export function ThemeProvider({ children }: Props) {
   // Subscribe to OS-level dark mode changes. setState lives only inside
   // the listener callback (allowed), the effect body itself is just the
   // subscribe/unsubscribe pair.
+  //
+  // Older WebKit (iOS Safari < 14, macOS Safari < 14) doesn't have
+  // `addEventListener` on MediaQueryList — it only ships the deprecated
+  // `addListener`. We feature-detect both so the listener actually fires
+  // on those devices instead of silently no-op'ing.
   useEffect(() => {
     if (typeof window === 'undefined' || !window.matchMedia) return;
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
+
     const handler = (e: MediaQueryListEvent) => {
       setSystemTheme(e.matches ? 'dark' : 'light');
     };
-    mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
+
+    if (typeof mq.addEventListener === 'function') {
+      mq.addEventListener('change', handler);
+      return () => mq.removeEventListener('change', handler);
+    }
+    // Legacy Safari fallback
+    mq.addListener(handler);
+    return () => mq.removeListener(handler);
   }, []);
 
   const setPreference = useCallback((next: ThemePreference) => {

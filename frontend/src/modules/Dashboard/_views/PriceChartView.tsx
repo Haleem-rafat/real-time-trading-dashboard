@@ -89,7 +89,9 @@ function PriceChartView() {
           chart is always visible regardless of how flex-1 resolves; on lg+
           it fills the remaining main area. */}
       <div className="h-[55vh] min-h-[300px] w-full p-3 sm:p-4 lg:h-auto lg:min-h-0 lg:flex-1">
-        <LiveChart symbol={symbol} />
+        {/* key={symbol} fully remounts the chart on symbol switch so the
+            old ticker's points never flash before the new history loads. */}
+        <LiveChart key={symbol} symbol={symbol} />
       </div>
     </div>
   );
