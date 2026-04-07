@@ -20,7 +20,12 @@ export type AlertDirection = 'above' | 'below';
         ret.updated_at = ret.updatedAt;
         delete ret.updatedAt;
       }
-      if (ret.user) ret.user = String(ret.user);
+      // `ret.user` is a Mongoose ObjectId; stringify it explicitly so
+      // the JSON payload contains a plain string instead of a nested
+      // object.
+      if (ret.user instanceof mongoose.Types.ObjectId) {
+        ret.user = ret.user.toHexString();
+      }
       if (ret.triggered_at instanceof Date) {
         ret.triggered_at = ret.triggered_at.toISOString();
       }

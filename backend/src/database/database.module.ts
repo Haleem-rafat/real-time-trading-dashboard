@@ -1,6 +1,7 @@
 import { Module, Logger } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import type { Connection } from 'mongoose';
 
 @Module({
   imports: [
@@ -14,7 +15,7 @@ import { MongooseModule } from '@nestjs/mongoose';
         return {
           uri: url,
           dbName,
-          connectionFactory: (connection) => {
+          connectionFactory: (connection: Connection) => {
             connection.on('connected', () => {
               logger.log(`✅ MongoDB connected → ${dbName}`);
             });

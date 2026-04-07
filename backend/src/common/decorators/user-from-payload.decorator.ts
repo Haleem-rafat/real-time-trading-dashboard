@@ -1,4 +1,5 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import type { Request } from 'express';
 
 export interface JwtPayload {
   sub: string;
@@ -7,9 +8,18 @@ export interface JwtPayload {
   exp?: number;
 }
 
+/**
+ * Typed `request.user` so `@UserFromPayload()` returns a real
+ * JwtPayload instead of `any`, which silences the downstream
+ * @typescript-eslint/no-unsafe-* rules in every controller.
+ */
+interface AuthedRequest extends Request {
+  user: JwtPayload;
+}
+
 export const UserFromPayload = createParamDecorator(
   (_data: unknown, ctx: ExecutionContext): JwtPayload => {
-    const request = ctx.switchToHttp().getRequest();
+    const request = ctx.switchToHttp().getRequest<AuthedRequest>();
     return request.user;
   },
 );

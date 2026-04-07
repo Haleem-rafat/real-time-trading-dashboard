@@ -1,3 +1,8 @@
+/* eslint-disable @typescript-eslint/unbound-method --
+ * `expect(...).toHaveBeenCalled*(serviceMock.method)` is the idiomatic
+ * jest way to assert on a mock and is always invoked through its owning
+ * object. The rule fires on every jest spec file that uses this pattern.
+ */
 import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
 import { ConflictException, UnauthorizedException } from '@nestjs/common';
