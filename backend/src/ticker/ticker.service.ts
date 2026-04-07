@@ -192,7 +192,8 @@ export class TickerService implements OnModuleInit {
         // into unrealistic waves. Mean-reversion anchors everything to
         // base_price so the series stays recognisable over 5 years.
         const stepScale = Math.sqrt(tier.stepMs / 1000);
-        const scaledVol = ticker.volatility * BACKFILL_VOLATILITY_SCALE * stepScale;
+        const scaledVol =
+          ticker.volatility * BACKFILL_VOLATILITY_SCALE * stepScale;
         let price = ticker.base_price;
         for (let i = tier.points; i >= 0; i--) {
           const drift =

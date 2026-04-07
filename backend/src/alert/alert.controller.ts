@@ -41,10 +41,7 @@ export class AlertController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete one of the current user’s alerts' })
-  async remove(
-    @UserFromPayload() user: JwtPayload,
-    @Param('id') id: string,
-  ) {
+  async remove(@UserFromPayload() user: JwtPayload, @Param('id') id: string) {
     await this.alertService.remove(user.sub, id);
   }
 }

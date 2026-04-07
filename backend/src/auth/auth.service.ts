@@ -31,7 +31,7 @@ export class AuthService {
       first_name: dto.first_name,
       last_name: dto.last_name,
     });
-    return this.buildAuthResponse(user.id!, user.email, user.toJSON());
+    return this.buildAuthResponse(user.id, user.email, user.toJSON());
   }
 
   async login(dto: LoginDto) {
@@ -43,7 +43,7 @@ export class AuthService {
     if (!matches) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    return this.buildAuthResponse(user.id!, user.email, user.toJSON());
+    return this.buildAuthResponse(user.id, user.email, user.toJSON());
   }
 
   async validateUserById(userId: string) {
