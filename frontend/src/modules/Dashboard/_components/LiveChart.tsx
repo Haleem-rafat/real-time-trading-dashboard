@@ -90,7 +90,7 @@ function formatTimeLong(ts: number): string {
 }
 
 function LiveChart({ symbol }: Props) {
-  const { history, isLoading, error } = useTickerHistory(symbol, '1h', '1m');
+  const { history, error } = useTickerHistory(symbol, '1h', '1m');
   const tick = useAppSelector((s) => s.livePrices.bySymbol[symbol]);
   // Lazy-initialize from whatever SWR returned synchronously so a cache
   // hit renders the chart immediately instead of flashing the skeleton
