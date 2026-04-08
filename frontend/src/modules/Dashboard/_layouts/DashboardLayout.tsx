@@ -1,6 +1,6 @@
 import { type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
-import { Activity, Circle, LogOut } from 'lucide-react';
+import { Activity, Circle, LogIn, LogOut, UserCircle2 } from 'lucide-react';
 import { cn } from '@/shadecn/lib/utils';
 import { Button } from '@UI/index';
 import { useAuth } from '@hooks/useAuth';
@@ -15,11 +15,16 @@ interface Props {
 }
 
 function DashboardLayout({ sidebar, children }: Props) {
-  const { user, signOut } = useAuth();
+  const { user, isGuest, signOut } = useAuth();
   const { isConnected } = useSocket();
   const navigate = useNavigate();
 
   const onLogout = () => {
+    signOut();
+    navigate(ERoutes.LOGIN, { replace: true });
+  };
+
+  const onSignIn = () => {
     signOut();
     navigate(ERoutes.LOGIN, { replace: true });
   };
@@ -47,17 +52,30 @@ function DashboardLayout({ sidebar, children }: Props) {
               />
               {isConnected ? 'Live' : 'Disconnected'}
             </span>
+            {isGuest && (
+              <span className="ml-2 inline-flex items-center gap-1 rounded border border-accent/40 bg-accent-soft px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-accent">
+                <UserCircle2 className="h-3 w-3" />
+                Guest mode
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-1 sm:gap-2">
             <ThemeToggle />
-            <AlertBell />
+            {!isGuest && <AlertBell />}
             <span className="num hidden text-xs text-text-dim md:ml-1 md:inline">
-              {user?.email}
+              {isGuest ? 'Browsing as guest' : user?.email}
             </span>
-            <Button variant="outline" size="sm" onClick={onLogout}>
-              <LogOut className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Logout</span>
-            </Button>
+            {isGuest ? (
+              <Button variant="primary" size="sm" onClick={onSignIn}>
+                <LogIn className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Sign in</span>
+              </Button>
+            ) : (
+              <Button variant="outline" size="sm" onClick={onLogout}>
+                <LogOut className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Logout</span>
+              </Button>
+            )}
           </div>
         </div>
       </header>

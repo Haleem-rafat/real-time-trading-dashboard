@@ -1,5 +1,9 @@
 import { useAppDispatch, useAppSelector } from '@store/hooks';
-import { logout, setCredentials } from '@store/slices/authSlice';
+import {
+  enterGuestMode,
+  logout,
+  setCredentials,
+} from '@store/slices/authSlice';
 import authService from '@services/auth.service';
 import type {
   ILoginPayload,
@@ -8,7 +12,9 @@ import type {
 
 export function useAuth() {
   const dispatch = useAppDispatch();
-  const { user, token, isAuthenticated } = useAppSelector((s) => s.auth);
+  const { user, token, isAuthenticated, isGuest } = useAppSelector(
+    (s) => s.auth,
+  );
 
   const login = async (payload: ILoginPayload) => {
     const result = await authService.login(payload);
@@ -22,9 +28,22 @@ export function useAuth() {
     return result;
   };
 
+  const continueAsGuest = () => {
+    dispatch(enterGuestMode());
+  };
+
   const signOut = () => {
     dispatch(logout());
   };
 
-  return { user, token, isAuthenticated, login, register, signOut };
+  return {
+    user,
+    token,
+    isAuthenticated,
+    isGuest,
+    login,
+    register,
+    continueAsGuest,
+    signOut,
+  };
 }

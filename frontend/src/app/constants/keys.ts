@@ -1,6 +1,7 @@
 export const ELocalStorageKeys = {
   TOKEN: 'trading_token',
   USER: 'trading_user',
+  GUEST: 'trading_guest',
 } as const;
 
 export type ELocalStorageKeys =

@@ -1,8 +1,10 @@
 import { useState, type KeyboardEvent } from 'react';
-import { Bell, TrendingDown, TrendingUp } from 'lucide-react';
+import { useNavigate } from 'react-router';
+import { Bell, Lock, TrendingDown, TrendingUp } from 'lucide-react';
 import { cn } from '@/shadecn/lib/utils';
 import { useAppDispatch, useAppSelector } from '@store/hooks';
 import { setSelectedTicker } from '@store/slices/selectedTickerSlice';
+import { ERoutes } from '@constants/routes';
 import type { ITicker } from '../../../app/api/types/ticker.types';
 import PriceFlash from './PriceFlash';
 import SetAlertModal from './SetAlertModal';
@@ -13,6 +15,8 @@ interface Props {
 
 function TickerRow({ ticker }: Props) {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const isGuest = useAppSelector((s) => s.auth.isGuest);
   const tick = useAppSelector((s) => s.livePrices.bySymbol[ticker.symbol]);
   const selected = useAppSelector(
     (s) => s.selectedTicker.symbol === ticker.symbol,
@@ -100,15 +104,28 @@ function TickerRow({ ticker }: Props) {
 
         {/* Right: always-visible alert button — its own real <button> so
             it's keyboard reachable and click events don't bubble to the
-            row's select handler. */}
+            row's select handler. Guests see a locked variant that sends
+            them to the login page instead of opening the modal. */}
         <button
           type="button"
           onClick={(e) => {
             e.stopPropagation();
+            if (isGuest) {
+              navigate(ERoutes.LOGIN);
+              return;
+            }
             setAlertOpen(true);
           }}
-          aria-label={`Set price alert for ${ticker.symbol}`}
-          title={`Set price alert for ${ticker.symbol}`}
+          aria-label={
+            isGuest
+              ? `Sign in to set price alerts for ${ticker.symbol}`
+              : `Set price alert for ${ticker.symbol}`
+          }
+          title={
+            isGuest
+              ? 'Sign in to set price alerts'
+              : `Set price alert for ${ticker.symbol}`
+          }
           className={cn(
             'flex h-7 w-7 shrink-0 items-center justify-center rounded border transition-all',
             'border-border bg-surface text-text-dim',
@@ -117,12 +134,16 @@ function TickerRow({ ticker }: Props) {
             hasActiveAlert && 'border-accent bg-accent-soft text-accent',
           )}
         >
-          <Bell className="h-3.5 w-3.5" />
+          {isGuest ? (
+            <Lock className="h-3.5 w-3.5" />
+          ) : (
+            <Bell className="h-3.5 w-3.5" />
+          )}
         </button>
       </div>
 
       {/* Conditional mount → fresh form state on every open, no reset effect */}
-      {alertOpen && (
+      {alertOpen && !isGuest && (
         <SetAlertModal
           symbol={ticker.symbol}
           onClose={() => setAlertOpen(false)}
